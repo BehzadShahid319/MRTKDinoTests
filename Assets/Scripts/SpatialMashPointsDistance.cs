@@ -61,7 +61,7 @@ public class SpatialMashPointsDistance : MonoBehaviour
     {
         if (Physics.Raycast(tipPosition, dir, out RaycastHit hit, rayLength, LayerMask.GetMask("Spatial Awareness")))
         {
-            if(!firstPointRegistered && !secondPointRegestered)
+            if(!firstPointRegistered)
             {
                 firstPointRegistered = true;
                 secondPointRegestered = false;
@@ -70,7 +70,7 @@ public class SpatialMashPointsDistance : MonoBehaviour
                 trackedObjectMesh.material = triggeredMaterial;
                 //Debug.Log("<color=yellow> Triggerred with Spatial Awareness Mesh</color>");
             }
-            else if(firstPointRegistered && !secondPointRegestered)
+            else if(!secondPointRegestered)
             {
                 firstPointRegistered = secondPointRegestered = true;
                 secondPointPosition = hit.point;
@@ -99,10 +99,10 @@ public class SpatialMashPointsDistance : MonoBehaviour
     float calculateDistance( Vector3 pointA, Vector3 pointB)
     {
         distance = 0;
+        distance = Vector3.Distance(pointA, pointB);
+        distanceCalculated = true;
         firstPointPostition = secondPointPosition = Vector3.zero;
         firstPointRegistered = secondPointRegestered = false;
-        distanceCalculated = true;
-        distance = Vector3.Distance(pointA, pointB);
         Debug.Log("<color=yellow>Distance = " + distance + "</color>");
         DistanceTextUI.text = distance.ToString();
         return distance;
