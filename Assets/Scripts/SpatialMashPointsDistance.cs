@@ -15,6 +15,13 @@ public class SpatialMashPointsDistance : MonoBehaviour
     [SerializeField] float rayLength;
     [SerializeField] LayerMask spatialObjectLayer;
 
+    [SerializeField]
+    [Range(0.001f, 0.01f)] float minPointDistance = 0.005f;
+    [SerializeField]
+    [Range(0.01f, 0.2f)] float minTime = 0.1f;
+    [SerializeField]
+    [Range(0.01f, 01f)] float smoothingFactor = 0.25f; 
+
     [SerializeField] Material defaultMaterial;
     [SerializeField] Material triggeredMaterial;
 
@@ -24,41 +31,51 @@ public class SpatialMashPointsDistance : MonoBehaviour
     [SerializeField] TextMeshProUGUI DistanceTextUI;
 
     Vector3 tipPosition;
+    Vector3 previousTipPosition;
     Vector3 rayTargetPoint;
     Vector3 direction;
+    Vector3 rawTipPos;
 
     bool tipTouchingSurface = false;
     bool firstPointRegistered, secondPointRegestered = false;
-    Vector3 firstPointPostition, secondPointPosition = Vector3.zero;
+    Vector3 firstPointPostition, secondPointPosition, lastRegisteredPoint = Vector3.zero;
+
+    float lastPointTime = 0;
     bool distanceCalculated = false;
     float distance = 0;
 
     private void Start()
     {
         lineRendererForDisplay.useWorldSpace = true;
+        previousTipPosition = trackedObject.position + trackedObject.rotation * tipOffset;
     }
 
     private void Update()
     {
         direction = -trackedObject.up;
-        tipPosition = trackedObject.position + trackedObject.rotation * tipOffset; //Get proper offset if object is rotated
+        rawTipPos = trackedObject.position + trackedObject.rotation * tipOffset;
+        tipPosition = Vector3.Lerp(previousTipPosition, rawTipPos, smoothingFactor); //Get proper offset if object is rotated
+        previousTipPosition = tipPosition;
+        //tipPosition = trackedObject.position + trackedObject.rotation * tipOffset; //Get proper offset if object is rotated
         //rayTargetPoint = -(rayLength * trackedObject.up) + tipPosition;
         rayTargetPoint = tipPosition + direction * rayLength;
-
-        // Ray direction: stylus "down" (or forward, depending on your model)
-        Vector3 rayEnd = tipPosition - trackedObject.up * rayLength;
 
         lineRendererForDisplay .SetPosition(0, tipPosition);
         lineRendererForDisplay.SetPosition(1, rayTargetPoint);
 
         detectTipCollision(direction);
+        if (Input.GetKeyDown(KeyCode.Delete))
+        {
+            removeDistanceData();
+        }
     }
 
     private void OnDrawGizmosSelected()
     {
-        tipPosition = trackedObject.position + trackedObject.rotation * tipOffset; //Get proper offset if object is rotated
+        if (trackedObject == null) return;
+        Vector3 gizmoTipPosition = trackedObject.position + trackedObject.rotation * tipOffset;//Get proper offset if object is rotated
         Gizmos.color = Color.red;
-        Gizmos.DrawLine(tipPosition, tipPosition - trackedObject.up * rayLength);
+        Gizmos.DrawLine(gizmoTipPosition, gizmoTipPosition - trackedObject.up * rayLength);
         //Gizmos.DrawLine(trackedObject.position, -(rayLength * trackedObject.up)+trackedObject.position);
     }
 
@@ -71,12 +88,23 @@ public class SpatialMashPointsDistance : MonoBehaviour
                 return;
             }
             tipTouchingSurface = true;
+
+            if(Time.time -lastPointTime < minTime)
+            {
+                return; 
+            }
+            lastPointTime = Time.time;
+            if(firstPointRegistered && Vector3.Distance(hit.point, lastRegisteredPoint) < minPointDistance)
+            {
+                return;
+            }
             if(!firstPointRegistered)
             {
                 firstPointRegistered = true;
                 secondPointRegestered = false;
                 firstPointPostition = hit.point;
-                point1PosDIsplayUI.text = firstPointPostition.ToString();
+                lastRegisteredPoint = hit.point;
+                point1PosDIsplayUI.text = firstPointPostition.ToString("F4");
                 trackedObjectMesh.material = triggeredMaterial;
                 //Debug.Log("<color=yellow> Triggerred with Spatial Awareness Mesh</color>");
             }
@@ -84,7 +112,8 @@ public class SpatialMashPointsDistance : MonoBehaviour
             {
                 firstPointRegistered = secondPointRegestered = true;
                 secondPointPosition = hit.point;
-                point2PosDIsplayUI.text = secondPointPosition.ToString();
+                lastRegisteredPoint = hit.point;
+                point2PosDIsplayUI.text = secondPointPosition.ToString("F4");
                 if(firstPointRegistered && secondPointRegestered)
                 {
                     calculateDistance(firstPointPostition, secondPointPosition);
@@ -94,22 +123,12 @@ public class SpatialMashPointsDistance : MonoBehaviour
         else
         {
             tipTouchingSurface = false;
-            if (distanceCalculated)
-            {
-                distanceCalculated = false;
-            }
             trackedObjectMesh.material = defaultMaterial;
-            //Debug.Log("<color=red> Triggerred Exit From SPatial Awareness Mesh</color>");
-        }
-        if (Input.GetKeyDown(KeyCode.Delete))
-        {
-            removeDistanceData();
         }
     }
 
     float calculateDistance( Vector3 pointA, Vector3 pointB)
     {
-        distance = 0;
         distance = Vector3.Distance(pointA, pointB);
         distance *= 100;
         DistanceTextUI.text = String.Format("{00:0000}" ,distance.ToString()+" cm");
@@ -120,10 +139,14 @@ public class SpatialMashPointsDistance : MonoBehaviour
 
     void removeDistanceData()
     {
-        firstPointPostition = secondPointPosition = Vector3.zero;
+        firstPointPostition = secondPointPosition = lastRegisteredPoint = Vector3.zero;
         firstPointRegistered = secondPointRegestered = false;
         distance = 0;
         distanceCalculated = false;
+        DistanceTextUI.text = "0 cm";
+        point1PosDIsplayUI.text = "";
+        point2PosDIsplayUI.text = "";
+        trackedObjectMesh.material = defaultMaterial;
         Debug.LogError("Distance Data Reset");
         return;
     }

@@ -1164,11 +1164,14 @@ MonoBehaviour:
   lineRendererForDisplay: {fileID: 456266242}
   trackedObject: {fileID: 456266240}
   trackedObjectMesh: {fileID: 2278539039704420682}
-  tipOffset: {x: 0, y: -0.1425, z: 0.016}
+  tipOffset: {x: 0, y: -0.145, z: 0.016}
   rayLength: 0.01
   spatialObjectLayer:
     serializedVersion: 2
     m_Bits: 2147483648
+  minPointDistance: 0.005
+  minTime: 0.1
+  smoothingFactor: 0.25
   defaultMaterial: {fileID: 2100000, guid: 8333b500a32e44c43a0d5d5a094997db, type: 2}
   triggeredMaterial: {fileID: -6478536213147159724, guid: eecefb9d4367d6940b0e39a26187d0f5, type: 3}
   point1PosDIsplayUI: {fileID: 2137785359}
@@ -2774,7 +2777,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b55691ad5b034fe6966763a6e23818d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  trackedTargetType: 6
+  trackedTargetType: 0
   trackedHandedness: 1
   trackedHandJoint: 2
   transformOverride: {fileID: 0}
