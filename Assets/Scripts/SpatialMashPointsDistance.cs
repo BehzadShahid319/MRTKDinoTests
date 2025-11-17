@@ -1,5 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,19 +13,21 @@ public class SpatialMashPointsDistance : MonoBehaviour
     [SerializeField] MeshRenderer trackedObjectMesh;
     [SerializeField] Vector3 tipOffset;
     [SerializeField] float rayLength;
+    [SerializeField] LayerMask spatialObjectLayer;
 
     [SerializeField] Material defaultMaterial;
     [SerializeField] Material triggeredMaterial;
 
     [Header("=====UI=====")]
-    [SerializeField] Text point1PosDIsplayUI;
-    [SerializeField] Text point2PosDIsplayUI;
-    [SerializeField] Text DistanceTextUI;
+    [SerializeField] TextMeshProUGUI point1PosDIsplayUI;
+    [SerializeField] TextMeshProUGUI point2PosDIsplayUI;
+    [SerializeField] TextMeshProUGUI DistanceTextUI;
 
     Vector3 tipPosition;
     Vector3 rayTargetPoint;
     Vector3 direction;
 
+    bool tipTouchingSurface = false;
     bool firstPointRegistered, secondPointRegestered = false;
     Vector3 firstPointPostition, secondPointPosition = Vector3.zero;
     bool distanceCalculated = false;
@@ -59,8 +64,13 @@ public class SpatialMashPointsDistance : MonoBehaviour
 
     void detectTipCollision(Vector3 dir)
     {
-        if (Physics.Raycast(tipPosition, dir, out RaycastHit hit, rayLength, LayerMask.GetMask("Spatial Awareness")))
+        if (Physics.Raycast(tipPosition, dir, out RaycastHit hit, rayLength, spatialObjectLayer))
         {
+            if (tipTouchingSurface)
+            {
+                return;
+            }
+            tipTouchingSurface = true;
             if(!firstPointRegistered)
             {
                 firstPointRegistered = true;
@@ -83,6 +93,7 @@ public class SpatialMashPointsDistance : MonoBehaviour
         }
         else
         {
+            tipTouchingSurface = false;
             if (distanceCalculated)
             {
                 distanceCalculated = false;
@@ -100,11 +111,10 @@ public class SpatialMashPointsDistance : MonoBehaviour
     {
         distance = 0;
         distance = Vector3.Distance(pointA, pointB);
+        distance *= 100;
+        DistanceTextUI.text = String.Format("{00:0000}" ,distance.ToString()+" cm");
         distanceCalculated = true;
-        firstPointPostition = secondPointPosition = Vector3.zero;
-        firstPointRegistered = secondPointRegestered = false;
         Debug.Log("<color=yellow>Distance = " + distance + "</color>");
-        DistanceTextUI.text = distance.ToString();
         return distance;
     }
 
