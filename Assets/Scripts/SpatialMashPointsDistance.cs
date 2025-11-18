@@ -16,9 +16,9 @@ public class SpatialMashPointsDistance : MonoBehaviour
     [SerializeField] LayerMask spatialObjectLayer;
 
     [SerializeField]
-    [Range(0.001f, 0.01f)] float minPointDistance = 0.005f;
+    [Range(0.001f, 0.05f)] float minPointDistance = 0.005f;
     [SerializeField]
-    [Range(0.01f, 0.2f)] float minTime = 0.1f;
+    [Range(0.01f, 0.5f)] float minTime = 0.1f;
     [SerializeField]
     [Range(0.01f, 01f)] float smoothingFactor = 0.25f; 
 

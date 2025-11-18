@@ -1164,13 +1164,13 @@ MonoBehaviour:
   lineRendererForDisplay: {fileID: 456266242}
   trackedObject: {fileID: 456266240}
   trackedObjectMesh: {fileID: 2278539039704420682}
-  tipOffset: {x: 0, y: -0.145, z: 0.016}
-  rayLength: 0.01
+  tipOffset: {x: 0, y: -0.15, z: 0.016}
+  rayLength: 0.005
   spatialObjectLayer:
     serializedVersion: 2
     m_Bits: 2147483648
-  minPointDistance: 0.005
-  minTime: 0.1
+  minPointDistance: 0.02
+  minTime: 0.25
   smoothingFactor: 0.25
   defaultMaterial: {fileID: 2100000, guid: 8333b500a32e44c43a0d5d5a094997db, type: 2}
   triggeredMaterial: {fileID: -6478536213147159724, guid: eecefb9d4367d6940b0e39a26187d0f5, type: 3}
@@ -1223,7 +1223,7 @@ LineRenderer:
   - {x: 0, y: 0, z: 1}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.003
+    widthMultiplier: 0.001
     widthCurve:
       serializedVersion: 2
       m_Curve:
