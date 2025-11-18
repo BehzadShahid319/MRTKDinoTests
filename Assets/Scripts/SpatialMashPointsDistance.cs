@@ -137,17 +137,17 @@ public class SpatialMashPointsDistance : MonoBehaviour
         return distance;
     }
 
-    void removeDistanceData()
+    public void removeDistanceData()
     {
         firstPointPostition = secondPointPosition = lastRegisteredPoint = Vector3.zero;
         firstPointRegistered = secondPointRegestered = false;
         distance = 0;
         distanceCalculated = false;
         DistanceTextUI.text = "0 cm";
-        point1PosDIsplayUI.text = "";
-        point2PosDIsplayUI.text = "";
+        point1PosDIsplayUI.text = Vector3.zero.ToString();
+        point2PosDIsplayUI.text = Vector3.zero.ToString();
         trackedObjectMesh.material = defaultMaterial;
-        Debug.LogError("Distance Data Reset");
+        //Debug.LogError("Distance Data Reset");
         return;
     }
 }
