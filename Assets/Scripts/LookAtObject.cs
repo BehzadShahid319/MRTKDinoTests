@@ -16,6 +16,6 @@ public class LookAtObject : MonoBehaviour
 
         // Optional:
         // If your canvas flips or rotates incorrectly, use:
-        transform.forward = -targetOBJ.transform.forward;
+        //transform.forward = -targetOBJ.transform.forward;
     }
 }
