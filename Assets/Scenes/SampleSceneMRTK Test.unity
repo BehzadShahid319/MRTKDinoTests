@@ -1235,7 +1235,7 @@ PrefabInstance:
     - target: {fileID: 5956172336509982321, guid: 36ff76a9e7929f342915274725573e00, type: 3}
       propertyPath: OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 456266241}
+      objectReference: {fileID: 0}
     - target: {fileID: 5956172336509982321, guid: 36ff76a9e7929f342915274725573e00, type: 3}
       propertyPath: OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: removeDistanceData
@@ -1284,7 +1284,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 456266240}
-  - component: {fileID: 456266241}
   - component: {fileID: 456266242}
   m_Layer: 0
   m_Name: TPS
@@ -1311,34 +1310,6 @@ Transform:
   m_Father: {fileID: 1861708498}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &456266241
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 456266239}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e83577f85603e34689a175a6e389832, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  lineRendererForDisplay: {fileID: 456266242}
-  trackedObject: {fileID: 456266240}
-  trackedObjectMesh: {fileID: 2278539039704420682}
-  tipOffset: {x: 0, y: -0.15, z: 0.016}
-  rayLength: 0.0075
-  spatialObjectLayer:
-    serializedVersion: 2
-    m_Bits: 2147483648
-  minPointDistance: 0.02
-  minTime: 0.25
-  smoothingFactor: 0.25
-  defaultMaterial: {fileID: 2100000, guid: 8333b500a32e44c43a0d5d5a094997db, type: 2}
-  triggeredMaterial: {fileID: -6478536213147159724, guid: eecefb9d4367d6940b0e39a26187d0f5, type: 3}
-  point1PosDIsplayUI: {fileID: 2137785359}
-  point2PosDIsplayUI: {fileID: 1506580418}
-  DistanceTextUI: {fileID: 739807107}
 --- !u!120 &456266242
 LineRenderer:
   m_ObjectHideFlags: 0
