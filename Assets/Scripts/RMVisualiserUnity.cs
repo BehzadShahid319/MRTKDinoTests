@@ -2,7 +2,7 @@
 
 public class RMVisualiserUnity : MonoBehaviour
 {
-    float forwardOffsetZ = 0.8f;
+    [SerializeField] float forwardOffsetZ = 0.8f;
 
     /// <summary>
     /// Use it to 'retrieve' and orient any GameObject attached to this script to face the user
