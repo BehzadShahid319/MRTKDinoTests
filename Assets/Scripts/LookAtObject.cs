@@ -6,6 +6,14 @@ public class LookAtObject : MonoBehaviour
 {
     [SerializeField] GameObject targetOBJ;
 
+    private void Awake()
+    {
+        if (targetOBJ == null)
+        {
+            targetOBJ = Camera.main.gameObject;
+        }
+    }
+
     void LateUpdate()
     {
         if (targetOBJ == null) return;
