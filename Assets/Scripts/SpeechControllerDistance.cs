@@ -59,11 +59,13 @@ public class SpeechControllerDistance : MonoBehaviour, IMixedRealitySpeechHandle
 
         if (cmd == "record point")
         {
-            GetPoint();
+            //GetPoint();
+            StylusPolylineRecorder.Instance.TryRecordPoint();
         }
         else if (cmd == "reset points")
         {
-            resetDistanceData();
+            //resetDistanceData();
+            StylusPolylineRecorder.Instance.ClearAll();
         }
     }
 
