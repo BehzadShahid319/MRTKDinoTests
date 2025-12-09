@@ -44,6 +44,7 @@ public class StylusPolylineRecorder : MonoBehaviour
     public int subdivisionsPerSegment = 6;
 
     [Header("Optional UI")]
+    public LookAtObject PolyLineCanvasLookAt;
     public TMP_Text totalDistanceText; // optional
     public TMP_Text pointsCountText;   // optional
 
@@ -75,7 +76,7 @@ public class StylusPolylineRecorder : MonoBehaviour
 
     private void Awake()
     {
-        if(Instance == null)
+        if (Instance == null)
         {
             Instance = this;
         }
@@ -120,16 +121,22 @@ public class StylusPolylineRecorder : MonoBehaviour
         }
 
         // Optional: update UI
-        if (totalDistanceText != null)
+        if (totalDistanceText != null && points.Count>1)
         {
             float mm = totalDistance * 1000f;
             totalDistanceText.text = $"Total: {mm:F2} mm";
             totalDistanceText.enabled = true;
+            totalDistanceText.transform.position = 0.02f * Vector3.up + ((points[0] + points[points.Count - 1]) / 2); //set total distance text position in center of line
         }
-        if (pointsCountText != null)
+        if (pointsCountText != null && points.Count > 1)
         {
             pointsCountText.text = $"Pts: {points.Count}";
             pointsCountText.enabled = true;
+            pointsCountText.transform.position = 0.04f * Vector3.up + ((points[0] + points[points.Count - 1]) / 2); //set total distance text position in center of line
+        }
+        if(((totalDistanceText != null && points.Count > 1) || (pointsCountText != null && points.Count > 1)) && PolyLineCanvasLookAt != null)
+        {
+            PolyLineCanvasLookAt.updateLookAt();
         }
     }
 

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class LookAtObject : MonoBehaviour
 {
+    [SerializeField] bool updateOnAwakeOnly = false;
     [SerializeField] GameObject targetOBJ;
 
     private void Awake()
@@ -12,9 +13,17 @@ public class LookAtObject : MonoBehaviour
         {
             targetOBJ = Camera.main.gameObject;
         }
+        if (updateOnAwakeOnly)
+            updateLookAt();
     }
 
     void LateUpdate()
+    {
+        if (updateOnAwakeOnly) return;
+        updateLookAt();
+    }
+
+    public void updateLookAt()
     {
         if (targetOBJ == null) return;
 
@@ -23,7 +32,7 @@ public class LookAtObject : MonoBehaviour
                          targetOBJ.transform.rotation * Vector3.up);
 
         // Optional:
-        // If your canvas flips or rotates incorrectly, use:
+        // If canvas flips or rotates incorrectly, use:
         //transform.forward = -targetOBJ.transform.forward;
     }
 }
