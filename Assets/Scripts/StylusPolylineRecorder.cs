@@ -31,6 +31,8 @@ public class StylusPolylineRecorder : MonoBehaviour
     public LineRenderer lineRenderer;
     [Tooltip("Marker prefab for each recorded point (small sphere).")]
     public GameObject markerPrefab;
+    [Tooltip("Distance Text prefab for each recorded point group.")]
+    public GameObject distanceTextPrefab;
     [Tooltip("Container transform for spawned markers (keeps hierarchy clean).")]
     public Transform worldMarkersParent;
     [Tooltip("Material for the smoothed polyline.")]
@@ -55,6 +57,7 @@ public class StylusPolylineRecorder : MonoBehaviour
     // runtime
     private List<Vector3> points = new List<Vector3>();
     private List<GameObject> markerPool = new List<GameObject>();
+    private List<GameObject> distanceTextPool = new List<GameObject>();
     private Vector3 smoothedTipPos;
     private float lastPointTime = -999f;
     private float totalDistance = 0f;
@@ -191,6 +194,7 @@ public class StylusPolylineRecorder : MonoBehaviour
     {
         points.Clear();
         RecycleAllMarkers();
+        RecycleAllDistanceTexts();
         totalDistance = 0f;
         pointsDirty = true;
         pointsCountText.enabled = false;
@@ -279,6 +283,50 @@ public class StylusPolylineRecorder : MonoBehaviour
         for (int i = 0; i < markerPool.Count; ++i)
         {
             if (markerPool[i] != null) markerPool[i].SetActive(false);
+        }
+    }
+    #endregion
+
+    #region Distance Text Pooling
+    private void EnsureDistanceTextPoolSize(int size)
+    {
+        while (distanceTextPool.Count < size)
+        {
+            GameObject go = null;
+            if (distanceTextPrefab != null)
+            {
+                go = Instantiate(distanceTextPrefab, Vector3.zero, Quaternion.identity);
+            }
+            else
+            {
+                return;
+            }
+            go.SetActive(false);
+            distanceTextPool.Add(go);
+        }
+    }
+
+    private void SpawnDistanceText(Vector3 pos, int index, float distance)
+    {
+        EnsureDistanceTextPoolSize(index + 1);
+        GameObject go = distanceTextPool[index];
+        go.transform.position = pos;
+        go.transform.rotation = Quaternion.identity;
+        go.SetActive(true);
+    }
+
+    private void DespawnDistanceTextAt(int index)
+    {
+        if (index < 0 || index >= distanceTextPool.Count) return;
+        GameObject go = distanceTextPool[index];
+        if (go != null) go.SetActive(false);
+    }
+
+    private void RecycleAllDistanceTexts()
+    {
+        for (int i = 0; i < distanceTextPool.Count; ++i)
+        {
+            if (distanceTextPool[i] != null) distanceTextPool[i].SetActive(false);
         }
     }
     #endregion
