@@ -27,6 +27,15 @@ public class MyUIManager : MonoBehaviour
             RMVisualiserUnity.ResetToFaceUser();
         }
     }
+
+    public void toggleLineStyle()
+    {
+        if (StylusPolylineRecorder.Instance)
+        {
+            StylusPolylineRecorder.Instance.toggleLineStyle();
+        }
+    }
+
     public void QuitApp()
     {
         Application.Quit();

@@ -9,6 +9,10 @@ public class StylusPolylineRecorder : MonoBehaviour
 {
     public static StylusPolylineRecorder Instance;
 
+    [Header("Line Mode")]
+    [Tooltip("If true, draws straight segments between points. If false, uses Catmull-Rom smoothing.")]
+    public bool useStraightLines = true;
+
     [Header("Tracking (required)")]
     [Tooltip("Transform that represents the tracked marker/root from DINO.")]
     public Transform trackedObject;
@@ -148,7 +152,10 @@ public class StylusPolylineRecorder : MonoBehaviour
     {
         // Use smoothed tip position
         Vector3 pos = smoothedTipPos;
-
+        if (forceRecord)
+        {
+            pos = trackedObject.position + trackedObject.rotation * tipOffset;
+        }
         // simple validation
         if (float.IsNaN(pos.x) || float.IsNaN(pos.y) || float.IsNaN(pos.z)) return false;
 
@@ -211,14 +218,18 @@ public class StylusPolylineRecorder : MonoBehaviour
             return;
         }
 
-        if (points.Count == 1)
+        // STRAIGHT LINE MODE
+        if (useStraightLines || points.Count < 3)
         {
-            lineRenderer.positionCount = 1;
-            lineRenderer.SetPosition(0, points[0]);
+            lineRenderer.positionCount = points.Count;
+            for (int i = 0; i < points.Count; ++i)
+            {
+                lineRenderer.SetPosition(i, points[i]);
+            }
             return;
         }
 
-        // Create a list of interpolated positions using Catmull-Rom
+        // CATMULL-ROM CURVE MODE
         List<Vector3> interp = CatmullRomSpline(points, subdivisionsPerSegment);
 
         lineRenderer.positionCount = interp.Count;
@@ -237,6 +248,12 @@ public class StylusPolylineRecorder : MonoBehaviour
             sum += Vector3.Distance(points[i - 1], points[i]);
         }
         totalDistance = sum;
+    }
+
+    public void toggleLineStyle()
+    {
+        useStraightLines = !useStraightLines;
+        RebuildPolyline();
     }
 
     #region Marker Pooling

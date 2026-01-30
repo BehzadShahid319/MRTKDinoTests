@@ -69,6 +69,17 @@ public class SpeechControllerDistance : MonoBehaviour, IMixedRealitySpeechHandle
         }
     }
 
+    [ContextMenu("GetPointPolyLine")]
+    void getPointPolyLine()
+    {
+        StylusPolylineRecorder.Instance.TryRecordPoint(true);
+    }
+
+    [ContextMenu("ResetPointsPolyLine")]
+    void resetPointsPolyLine()
+    {
+        StylusPolylineRecorder.Instance.ClearAll();
+    }
 
     [ContextMenu("GetPoint")]
     public void GetPoint()
