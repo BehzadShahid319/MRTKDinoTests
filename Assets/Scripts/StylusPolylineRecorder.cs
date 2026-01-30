@@ -9,6 +9,10 @@ public class StylusPolylineRecorder : MonoBehaviour
 {
     public static StylusPolylineRecorder Instance;
 
+    [Header("Line Mode")]
+    [Tooltip("If true, draws straight segments between points. If false, uses Catmull-Rom smoothing.")]
+    public bool useStraightLines = true;
+
     [Header("Tracking (required)")]
     [Tooltip("Transform that represents the tracked marker/root from DINO.")]
     public Transform trackedObject;
@@ -31,6 +35,8 @@ public class StylusPolylineRecorder : MonoBehaviour
     public LineRenderer lineRenderer;
     [Tooltip("Marker prefab for each recorded point (small sphere).")]
     public GameObject markerPrefab;
+    [Tooltip("Distance Text prefab for each recorded point group.")]
+    public GameObject distanceTextPrefab;
     [Tooltip("Container transform for spawned markers (keeps hierarchy clean).")]
     public Transform worldMarkersParent;
     [Tooltip("Material for the smoothed polyline.")]
@@ -44,6 +50,7 @@ public class StylusPolylineRecorder : MonoBehaviour
     public int subdivisionsPerSegment = 6;
 
     [Header("Optional UI")]
+    public LookAtObject PolyLineCanvasLookAt;
     public TMP_Text totalDistanceText; // optional
     public TMP_Text pointsCountText;   // optional
 
@@ -54,6 +61,7 @@ public class StylusPolylineRecorder : MonoBehaviour
     // runtime
     private List<Vector3> points = new List<Vector3>();
     private List<GameObject> markerPool = new List<GameObject>();
+    private List<GameObject> distanceTextPool = new List<GameObject>();
     private Vector3 smoothedTipPos;
     private float lastPointTime = -999f;
     private float totalDistance = 0f;
@@ -75,7 +83,7 @@ public class StylusPolylineRecorder : MonoBehaviour
 
     private void Awake()
     {
-        if(Instance == null)
+        if (Instance == null)
         {
             Instance = this;
         }
@@ -120,16 +128,22 @@ public class StylusPolylineRecorder : MonoBehaviour
         }
 
         // Optional: update UI
-        if (totalDistanceText != null)
+        if (totalDistanceText != null && points.Count>1)
         {
             float mm = totalDistance * 1000f;
             totalDistanceText.text = $"Total: {mm:F2} mm";
             totalDistanceText.enabled = true;
+            totalDistanceText.transform.position = 0.02f * Vector3.up + ((points[0] + points[points.Count - 1]) / 2); //set total distance text position in center of line
         }
-        if (pointsCountText != null)
+        if (pointsCountText != null && points.Count > 1)
         {
             pointsCountText.text = $"Pts: {points.Count}";
             pointsCountText.enabled = true;
+            pointsCountText.transform.position = 0.04f * Vector3.up + ((points[0] + points[points.Count - 1]) / 2); //set total distance text position in center of line
+        }
+        if(((totalDistanceText != null && points.Count > 1) || (pointsCountText != null && points.Count > 1)) && PolyLineCanvasLookAt != null)
+        {
+            PolyLineCanvasLookAt.updateLookAt();
         }
     }
 
@@ -138,7 +152,10 @@ public class StylusPolylineRecorder : MonoBehaviour
     {
         // Use smoothed tip position
         Vector3 pos = smoothedTipPos;
-
+        if (forceRecord)
+        {
+            pos = trackedObject.position + trackedObject.rotation * tipOffset;
+        }
         // simple validation
         if (float.IsNaN(pos.x) || float.IsNaN(pos.y) || float.IsNaN(pos.z)) return false;
 
@@ -184,6 +201,7 @@ public class StylusPolylineRecorder : MonoBehaviour
     {
         points.Clear();
         RecycleAllMarkers();
+        RecycleAllDistanceTexts();
         totalDistance = 0f;
         pointsDirty = true;
         pointsCountText.enabled = false;
@@ -200,14 +218,18 @@ public class StylusPolylineRecorder : MonoBehaviour
             return;
         }
 
-        if (points.Count == 1)
+        // STRAIGHT LINE MODE
+        if (useStraightLines || points.Count < 3)
         {
-            lineRenderer.positionCount = 1;
-            lineRenderer.SetPosition(0, points[0]);
+            lineRenderer.positionCount = points.Count;
+            for (int i = 0; i < points.Count; ++i)
+            {
+                lineRenderer.SetPosition(i, points[i]);
+            }
             return;
         }
 
-        // Create a list of interpolated positions using Catmull-Rom
+        // CATMULL-ROM CURVE MODE
         List<Vector3> interp = CatmullRomSpline(points, subdivisionsPerSegment);
 
         lineRenderer.positionCount = interp.Count;
@@ -226,6 +248,12 @@ public class StylusPolylineRecorder : MonoBehaviour
             sum += Vector3.Distance(points[i - 1], points[i]);
         }
         totalDistance = sum;
+    }
+
+    public void toggleLineStyle()
+    {
+        useStraightLines = !useStraightLines;
+        RebuildPolyline();
     }
 
     #region Marker Pooling
@@ -272,6 +300,50 @@ public class StylusPolylineRecorder : MonoBehaviour
         for (int i = 0; i < markerPool.Count; ++i)
         {
             if (markerPool[i] != null) markerPool[i].SetActive(false);
+        }
+    }
+    #endregion
+
+    #region Distance Text Pooling
+    private void EnsureDistanceTextPoolSize(int size)
+    {
+        while (distanceTextPool.Count < size)
+        {
+            GameObject go = null;
+            if (distanceTextPrefab != null)
+            {
+                go = Instantiate(distanceTextPrefab, Vector3.zero, Quaternion.identity);
+            }
+            else
+            {
+                return;
+            }
+            go.SetActive(false);
+            distanceTextPool.Add(go);
+        }
+    }
+
+    private void SpawnDistanceText(Vector3 pos, int index, float distance)
+    {
+        EnsureDistanceTextPoolSize(index + 1);
+        GameObject go = distanceTextPool[index];
+        go.transform.position = pos;
+        go.transform.rotation = Quaternion.identity;
+        go.SetActive(true);
+    }
+
+    private void DespawnDistanceTextAt(int index)
+    {
+        if (index < 0 || index >= distanceTextPool.Count) return;
+        GameObject go = distanceTextPool[index];
+        if (go != null) go.SetActive(false);
+    }
+
+    private void RecycleAllDistanceTexts()
+    {
+        for (int i = 0; i < distanceTextPool.Count; ++i)
+        {
+            if (distanceTextPool[i] != null) distanceTextPool[i].SetActive(false);
         }
     }
     #endregion
