@@ -179,6 +179,16 @@ public class StylusPolylineRecorder : MonoBehaviour
     {
         points.Add(worldPos);
         SpawnMarker(worldPos, points.Count - 1);
+        if (points.Count > 2)
+        {
+            float dist = Vector3.Distance(points[points.Count - 2], points[points.Count - 1]) * 1000f; // mm
+            Vector3 midPoint = (points[points.Count - 2] + points[points.Count - 1]) / 2f;
+            SpawnDistanceText(midPoint, points.Count - 2, dist);
+            //spawn distance text for 1st 2 Points
+            dist = Vector3.Distance(points[1], points[0]) * 1000f; // mm
+            midPoint = (points[1] + points[0]) / 2f;
+            SpawnDistanceText(midPoint, 0, dist);
+        }
         UpdateTotalDistance();
         pointsDirty = true;
         if (saveLogToFile) AppendLog($"Point[{points.Count - 1}] = {worldPos.ToString("F6")}");
@@ -327,8 +337,9 @@ public class StylusPolylineRecorder : MonoBehaviour
     {
         EnsureDistanceTextPoolSize(index + 1);
         GameObject go = distanceTextPool[index];
+        go.GetComponentInChildren<TMP_Text>().text = distance.ToString("F2") + " mm";
         go.transform.position = pos;
-        go.transform.rotation = Quaternion.identity;
+        //go.transform.rotation = Quaternion.identity;
         go.SetActive(true);
     }
 
