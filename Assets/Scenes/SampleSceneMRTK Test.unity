@@ -6523,7 +6523,7 @@ MonoBehaviour:
   tipSmoothing: 0.25
   lineRenderer: {fileID: 1766092123}
   markerPrefab: {fileID: 6754648083857159498, guid: 8081581da5a1d994ead2431f70fbaa56, type: 3}
-  distanceTextPrefab: {fileID: 0}
+  distanceTextPrefab: {fileID: 8492236323871400443, guid: 74fc296e7a65c3a4e83fa97500b1d8c8, type: 3}
   worldMarkersParent: {fileID: 1254820632}
   lineMaterial: {fileID: 2100000, guid: 0fac9b29cf4ec554380268eade927de6, type: 2}
   lineWidth: 0.004
