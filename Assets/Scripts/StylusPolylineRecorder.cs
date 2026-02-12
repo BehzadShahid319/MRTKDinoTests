@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -59,7 +59,6 @@ public class StylusPolylineRecorder : MonoBehaviour
     public string logFileName = "PolylinePointsLog.txt";
 
     // runtime
-    private List<float> segmentDistances = new List<float>();
     private List<Vector3> points = new List<Vector3>();
     private List<GameObject> markerPool = new List<GameObject>();
     private List<GameObject> distanceTextPool = new List<GameObject>();
@@ -180,68 +179,34 @@ public class StylusPolylineRecorder : MonoBehaviour
     {
         points.Add(worldPos);
         SpawnMarker(worldPos, points.Count - 1);
-
-        // If not first point → create segment
-        if (points.Count > 1)
-        {
-            int segIndex = points.Count - 2;
-
-            float segDistance = Vector3.Distance(points[segIndex], points[segIndex + 1]);
-            segmentDistances.Add(segDistance);
-
-            SpawnSegmentDistanceText(segIndex, segDistance);
-        }
-
         UpdateTotalDistance();
         pointsDirty = true;
-
-        if (saveLogToFile)
-            AppendLog($"Point[{points.Count - 1}] = {worldPos.ToString("F6")}");
+        if (saveLogToFile) AppendLog($"Point[{points.Count - 1}] = {worldPos.ToString("F6")}");
     }
 
     // Undo last point
     public bool UndoLastPoint()
     {
         if (points.Count == 0) return false;
-
         int lastIndex = points.Count - 1;
-
-        // Remove last segment UI if exists
-        if (points.Count > 1)
-        {
-            int segIndex = points.Count - 2;
-            segmentDistances.RemoveAt(segIndex);
-            DespawnDistanceTextAt(segIndex);
-        }
-
         points.RemoveAt(lastIndex);
         DespawnMarkerAt(lastIndex);
-
         UpdateTotalDistance();
         pointsDirty = true;
-
-        if (saveLogToFile)
-            AppendLog($"Undo point {lastIndex}");
-
+        if (saveLogToFile) AppendLog($"Undo point {lastIndex}");
         return true;
     }
 
     public void ClearAll()
     {
         points.Clear();
-        segmentDistances.Clear();
-
         RecycleAllMarkers();
         RecycleAllDistanceTexts();
-
         totalDistance = 0f;
         pointsDirty = true;
-
-        if (pointsCountText != null) pointsCountText.enabled = false;
-        if (totalDistanceText != null) totalDistanceText.enabled = false;
-
-        if (saveLogToFile)
-            AppendLog("Cleared all points");
+        pointsCountText.enabled = false;
+        totalDistanceText.enabled = false;
+        if (saveLogToFile) AppendLog("Cleared all points");
     }
 
     // Rebuild the LineRenderer with smoothed Catmull-Rom points
@@ -274,7 +239,7 @@ public class StylusPolylineRecorder : MonoBehaviour
         }
     }
 
-    // calculate total polyline length (sum of segments between points — not the interpolated length)
+    // calculate total polyline length (sum of segments between points � not the interpolated length)
     private void UpdateTotalDistance()
     {
         float sum = 0f;
@@ -340,61 +305,47 @@ public class StylusPolylineRecorder : MonoBehaviour
     #endregion
 
     #region Distance Text Pooling
-    private void SpawnSegmentDistanceText(int segmentIndex, float distance)
-    {
-        EnsureDistanceTextPoolSize(segmentIndex + 1);
-
-        GameObject go = distanceTextPool[segmentIndex];
-
-        Vector3 p1 = points[segmentIndex];
-        Vector3 p2 = points[segmentIndex + 1];
-
-        Vector3 midpoint = (p1 + p2) * 0.5f;
-        go.transform.SetParent(worldMarkersParent, false);
-        go.transform.position = midpoint + Vector3.up * 0.01f; // slight offset
-        go.transform.rotation = Quaternion.identity;
-
-        TMP_Text txt = go.GetComponentInChildren<TMP_Text>();
-        if (txt != null)
-        {
-            float mm = distance * 1000f;
-            txt.text = $"{mm:F2} mm";
-        }
-
-        go.SetActive(true);
-    }
-
     private void EnsureDistanceTextPoolSize(int size)
     {
         while (distanceTextPool.Count < size)
         {
-            if (distanceTextPrefab == null) return;
-
-            GameObject go = Instantiate(distanceTextPrefab, worldMarkersParent);
+            GameObject go = null;
+            if (distanceTextPrefab != null)
+            {
+                go = Instantiate(distanceTextPrefab, Vector3.zero, Quaternion.identity);
+            }
+            else
+            {
+                return;
+            }
             go.SetActive(false);
             distanceTextPool.Add(go);
         }
     }
 
+    private void SpawnDistanceText(Vector3 pos, int index, float distance)
+    {
+        EnsureDistanceTextPoolSize(index + 1);
+        GameObject go = distanceTextPool[index];
+        go.transform.position = pos;
+        go.transform.rotation = Quaternion.identity;
+        go.SetActive(true);
+    }
+
     private void DespawnDistanceTextAt(int index)
     {
         if (index < 0 || index >= distanceTextPool.Count) return;
-
-        if (distanceTextPool[index] != null)
-            distanceTextPool[index].SetActive(false);
+        GameObject go = distanceTextPool[index];
+        if (go != null) go.SetActive(false);
     }
 
     private void RecycleAllDistanceTexts()
     {
         for (int i = 0; i < distanceTextPool.Count; ++i)
         {
-            if (distanceTextPool[i] != null)
-                distanceTextPool[i].SetActive(false);
+            if (distanceTextPool[i] != null) distanceTextPool[i].SetActive(false);
         }
-
-        segmentDistances.Clear();
     }
-
     #endregion
 
     #region Catmull-Rom Spline
